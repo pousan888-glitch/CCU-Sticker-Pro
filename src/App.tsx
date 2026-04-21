@@ -60,9 +60,10 @@ export default function App() {
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
   
-  // Use a Map for stickers to avoid index confusion when filtering
-  const stickerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  // Use a ref array for guaranteed 1:1 mapping with the filtered list
+  const stickerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("ccu_equipments");
@@ -113,6 +114,8 @@ export default function App() {
     if (filteredEquipments.length === 0) return;
     
     setIsExporting(true);
+    setExportProgress(0);
+    
     const pdf = new jsPDF({
       orientation: "landscape",
       unit: "in",
@@ -120,41 +123,41 @@ export default function App() {
     });
 
     try {
-      // Clear Map of non-existent elements first? 
-      // Better to just iterate over current filters
       for (let i = 0; i < filteredEquipments.length; i++) {
-        const item = filteredEquipments[i];
-        const element = stickerRefs.current.get(item.serialNumber);
+        setExportProgress(Math.round((i / filteredEquipments.length) * 100));
+        
+        const element = stickerRefs.current[i];
         
         if (element) {
-          // Robust html2canvas settings
           const canvas = await html2canvas(element, {
-            scale: 2, 
+            scale: 1.5, 
             useCORS: true,
             allowTaint: true,
             backgroundColor: "#ffffff",
-            logging: false
+            logging: false,
+            width: element.offsetWidth,
+            height: element.offsetHeight
           });
           
-          const imgData = canvas.toDataURL("image/jpeg", 0.95);
+          const imgData = canvas.toDataURL("image/jpeg", 0.9);
           
           if (i > 0) pdf.addPage([4, 3], "landscape");
           pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
           
-          // Small delay to prevent UI freezing and memory spikes
-          if (filteredEquipments.length > 5) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
+          // Yield to UI thread
+          await new Promise(resolve => setTimeout(resolve, i % 5 === 0 ? 100 : 20));
         }
       }
       
+      setExportProgress(100);
       const fileName = `CCU_Labels_${new Date().toISOString().slice(0, 10)}.pdf`;
       pdf.save(fileName);
     } catch (error) {
       console.error("PDF Export failed:", error);
-      alert("Failed to generate PDF. Typical causes: too many items at once or browser memory. Try searching to export fewer items.");
+      alert("PDF generation failed. This usually happens with too many stickers. Please use the search box to filter and export shorter batches (e.g., 10-20 at a time).");
     } finally {
       setIsExporting(false);
+      setExportProgress(0);
     }
   };
 
@@ -224,14 +227,22 @@ export default function App() {
           <button
             onClick={downloadPDFFull}
             disabled={equipments.length === 0 || isExporting}
-            className="w-full py-4 px-6 bg-ink text-white rounded-xl font-bold flex items-center justify-center space-x-2 transition-all hover:bg-gray-800 active:scale-[0.98] disabled:opacity-30 shadow-lg"
+            className="w-full py-4 px-6 bg-ink text-white rounded-xl font-bold flex items-center justify-center space-x-2 transition-all hover:bg-gray-800 active:scale-[0.98] disabled:opacity-30 shadow-lg relative overflow-hidden"
           >
-            {isExporting ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Download className="w-5 h-5" />
+            {isExporting && (
+              <div 
+                className="absolute left-0 top-0 h-full bg-primary/20 transition-all duration-300 pointer-events-none" 
+                style={{ width: `${exportProgress}%` }}
+              />
             )}
-            <span className="uppercase tracking-widest text-xs">Download PDF (Direct)</span>
+            {isExporting ? (
+              <Loader2 className="w-5 h-5 animate-spin z-10" />
+            ) : (
+              <Download className="w-5 h-5 z-10" />
+            )}
+            <span className="uppercase tracking-widest text-xs z-10">
+              {isExporting ? `Exporting ${exportProgress}%` : 'Download PDF (Direct)'}
+            </span>
           </button>
 
            <button
@@ -268,9 +279,7 @@ export default function App() {
               <StickerCard 
                 key={`${item.serialNumber}-${idx}`} 
                 equipment={item} 
-                innerRef={(el) => {
-                  if (el) stickerRefs.current.set(item.serialNumber, el);
-                }}
+                innerRef={(el) => (stickerRefs.current[idx] = el)}
               />
             ))
           )}
