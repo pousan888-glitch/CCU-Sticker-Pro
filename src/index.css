@@ -46,7 +46,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.15in 0.25in 0.15in 0.25in;
+    padding: 0.1in 0.25in 0.25in 0.25in; /* Reduced top padding, increased bottom safety bubble */
     color: #000000;
   }
 
@@ -56,7 +56,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.15in;
+    margin-bottom: 0.08in; /* Reduced from 0.15in to lift text up */
   }
 
   .label-text-container-word {
