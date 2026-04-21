@@ -21,7 +21,7 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
           <div className="qr-wrapper">
             <QRCodeCanvas
               value={equipment.workId}
-              size={85}
+              size={128}
               level="H"
               includeMargin={false}
             />
@@ -132,13 +132,12 @@ export default function App() {
         if (element) {
           try {
             const canvas = await html2canvas(element, {
-              scale: 2, // Back to 2 for better text clarity
+              scale: 3, // Ultra sharpness for printing
               useCORS: true,
               allowTaint: true,
               backgroundColor: "#ffffff",
               logging: false,
               onclone: (clonedDoc) => {
-                // Ensure the cloned segment has overflow visible to prevent clipping
                 const targets = clonedDoc.getElementsByClassName('sticker-export-target');
                 for (let j = 0; j < targets.length; j++) {
                   (targets[j] as HTMLElement).style.overflow = 'visible';
@@ -154,17 +153,16 @@ export default function App() {
               },
               width: element.offsetWidth,
               height: element.offsetHeight,
-              // Fixed scroll handling
               scrollX: 0,
               scrollY: 0,
               windowWidth: document.documentElement.offsetWidth,
               windowHeight: document.documentElement.offsetHeight
             });
             
-            const imgData = canvas.toDataURL("image/jpeg", 0.8);
+            const imgData = canvas.toDataURL("image/png"); // PNG for maximum text clarity
             
             if (i > 0) pdf.addPage([4, 3], "landscape");
-            pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
+            pdf.addImage(imgData, "PNG", 0, 0, 4, 3);
           } catch (itemError) {
             console.error(`Error processing item ${i} (SN: ${item.serialNumber}):`, itemError);
             // Continue with other items instead of failing everything
