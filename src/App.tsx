@@ -1,15 +1,18 @@
-import { useState, useMemo, useEffect, FC } from "react";
+import { useState, useMemo, useEffect, FC, useRef, RefObject } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, Printer, FileText, Database, X } from "lucide-react";
+import { Search, Printer, FileText, Database, X, Download, Loader2 } from "lucide-react";
 import { Equipment } from "./types";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface StickerCardProps {
   equipment: Equipment;
+  innerRef?: RefObject<HTMLDivElement | null>;
 }
 
-const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
+const StickerCard: FC<StickerCardProps> = ({ equipment, innerRef }) => {
   return (
-    <div className="sticker-container group relative print:break-inside-avoid">
+    <div ref={innerRef as any} className="sticker-container group relative print:break-inside-avoid">
       <div className="sticker-content">
         <div className="sticker-body">
           {/* Header/QR Area */}
@@ -56,6 +59,10 @@ export default function App() {
   const [rawData, setRawData] = useState("");
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+  
+  // Create refs for stickers to capture
+  const stickerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("ccu_equipments");
@@ -99,6 +106,46 @@ export default function App() {
     if (confirm("Are you sure you want to clear all data?")) {
       setEquipments([]);
       localStorage.removeItem("ccu_equipments");
+    }
+  };
+
+  const downloadPDFFull = async () => {
+    if (filteredEquipments.length === 0) return;
+    
+    setIsExporting(true);
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "in",
+      format: [4, 3]
+    });
+
+    try {
+      for (let i = 0; i < filteredEquipments.length; i++) {
+        const element = stickerRefs.current[i];
+        if (element) {
+          // Temporarily force solid background for capture if print styles hide it, 
+          // but user wants yellow in PDF or white? The user said "black letters on white" for print.
+          // Let's stick to black on white for the PDF export as well as requested.
+          const canvas = await html2canvas(element, {
+            scale: 3, // High quality
+            useCORS: true,
+            backgroundColor: "#ffffff" // Force white background as requested
+          });
+          
+          const imgData = canvas.toDataURL("image/jpeg", 1.0);
+          
+          if (i > 0) pdf.addPage([4, 3], "landscape");
+          pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
+        }
+      }
+      
+      const fileName = `CCU_Labels_${new Date().toISOString().slice(0, 10)}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error("PDF Export failed", error);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -164,16 +211,29 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mt-auto pt-8 border-t border-gray-100">
+        <div className="mt-auto pt-8 border-t border-gray-100 space-y-3">
+          <button
+            onClick={downloadPDFFull}
+            disabled={equipments.length === 0 || isExporting}
+            className="w-full py-4 px-6 bg-ink text-white rounded-xl font-bold flex items-center justify-center space-x-2 transition-all hover:bg-gray-800 active:scale-[0.98] disabled:opacity-30 shadow-lg"
+          >
+            {isExporting ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Download className="w-5 h-5" />
+            )}
+            <span className="uppercase tracking-widest text-xs">Download PDF (Direct)</span>
+          </button>
+
            <button
             onClick={() => window.print()}
-            disabled={equipments.length === 0}
+            disabled={equipments.length === 0 || isExporting}
             className="w-full btn-accent disabled:opacity-30 disabled:cursor-not-allowed group shadow-xl"
           >
             <Printer className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="uppercase tracking-widest">Print Sticker (4x3)</span>
+            <span className="uppercase tracking-widest">Print Browser (4x3)</span>
           </button>
-          <p className="mt-4 text-[9px] text-gray-400 text-center font-mono opacity-60">ZPL COMPATIBLE • 300 DPI THERMAL READY</p>
+          <p className="mt-4 text-[9px] text-gray-400 text-center font-mono opacity-60 uppercase">ZPL READY • 300 DPI • 4x3 Landscape</p>
         </div>
       </aside>
 
@@ -184,7 +244,7 @@ export default function App() {
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Live Output Preview</p>
           </div>
-          <p className="text-[9px] font-mono tracking-widest">ACTIVE BUFFER: {filteredEquipments.length} UNITS</p>
+          <p className="text-[9px] font-mono tracking-widest uppercase">ACTIVE BUFFER: {filteredEquipments.length} UNITS</p>
         </div>
 
         {/* Stickers Viewport */}
@@ -196,7 +256,11 @@ export default function App() {
             </div>
           ) : (
             filteredEquipments.map((item, idx) => (
-              <StickerCard key={`${item.serialNumber}-${idx}`} equipment={item} />
+              <StickerCard 
+                key={`${item.serialNumber}-${idx}`} 
+                equipment={item} 
+                innerRef={(el) => (stickerRefs.current[idx] = el)}
+              />
             ))
           )}
         </div>
