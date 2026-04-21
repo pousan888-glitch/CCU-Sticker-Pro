@@ -24,6 +24,7 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
               size={120}
               level="H"
               includeMargin={false}
+              bgColor="transparent"
             />
           </div>
 

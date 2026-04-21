@@ -51,7 +51,7 @@
   }
 
   .qr-wrapper-centered {
-    background-color: #ffffff;
+    background-color: transparent;
     padding: 2px;
     display: flex;
     align-items: center;
