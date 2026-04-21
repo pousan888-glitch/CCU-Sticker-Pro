@@ -125,35 +125,49 @@ export default function App() {
     try {
       for (let i = 0; i < filteredEquipments.length; i++) {
         const item = filteredEquipments[i];
-        setExportProgress(Math.round((i / filteredEquipments.length) * 100));
         
         // Find element by Serial Number data attribute for more stability
         const element = document.querySelector(`[data-sn="${item.serialNumber}"]`) as HTMLDivElement;
         
         if (element) {
-          const canvas = await html2canvas(element, {
-            scale: 1.5, // Reduced scale to save memory
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: "#ffffff",
-            logging: false,
-            // Ensure capture size is correct
-            width: element.offsetWidth,
-            height: element.offsetHeight,
-            // Avoid issues with scrolls
-            scrollX: 0,
-            scrollY: -window.scrollY,
-            windowWidth: document.documentElement.offsetWidth,
-            windowHeight: document.documentElement.offsetHeight
-          });
+          try {
+            const canvas = await html2canvas(element, {
+              scale: 1.5, // 1.5 is safer for memory in large batches
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: "#ffffff",
+              logging: false,
+              onclone: (clonedDoc) => {
+                const styles = clonedDoc.getElementsByTagName('style');
+                for (let j = 0; j < styles.length; j++) {
+                  const s = styles[j];
+                  if (s.innerHTML.includes('oklch') || s.innerHTML.includes('oklab')) {
+                    s.innerHTML = s.innerHTML.replace(/(oklch|oklab)\([^)]+\)/g, '#000000');
+                  }
+                }
+              },
+              width: element.offsetWidth,
+              height: element.offsetHeight,
+              scrollX: 0,
+              scrollY: -window.scrollY,
+              windowWidth: document.documentElement.offsetWidth,
+              windowHeight: document.documentElement.offsetHeight
+            });
+            
+            const imgData = canvas.toDataURL("image/jpeg", 0.8);
+            
+            if (i > 0) pdf.addPage([4, 3], "landscape");
+            pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
+          } catch (itemError) {
+            console.error(`Error processing item ${i} (SN: ${item.serialNumber}):`, itemError);
+            // Continue with other items instead of failing everything
+          }
           
-          const imgData = canvas.toDataURL("image/jpeg", 0.85); // Reduced quality for memory
+          const nextProgress = Math.round(((i + 1) / filteredEquipments.length) * 100);
+          setExportProgress(nextProgress);
           
-          if (i > 0) pdf.addPage([4, 3], "landscape");
-          pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
-          
-          // Yield to UI thread often for responsiveness
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // Yield to UI thread to prevent freezing and allow progress bar to update
+          await new Promise(resolve => setTimeout(resolve, 100));
         } else {
           console.warn(`Element for SN: ${item.serialNumber} not found.`);
         }
@@ -193,7 +207,7 @@ export default function App() {
             value={rawData}
             onChange={(e) => setRawData(e.target.value)}
             placeholder="Paste Excel columns here...&#10;SN	Rental	WorkID	Owner"
-            className="w-full h-48 p-4 text-xs font-mono border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none bg-gray-50 transition-all resize-none shadow-sm"
+            className="w-full h-48 p-4 text-xs font-mono border border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#ffed0033] focus:border-primary outline-none bg-gray-50 transition-all resize-none shadow-sm"
           />
           <div className="flex gap-2">
             <button
@@ -222,7 +236,7 @@ export default function App() {
               placeholder="Search SN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-4 px-12 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-sm font-semibold transition-all shadow-sm"
+              className="w-full py-4 px-12 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#ffed0033] focus:border-primary outline-none text-sm font-semibold transition-all shadow-sm"
             />
             <Search className="absolute left-4 top-4 w-4 h-4 text-gray-400" />
             {searchQuery && (
@@ -241,7 +255,7 @@ export default function App() {
           >
             {isExporting && (
               <div 
-                className="absolute left-0 top-0 h-full bg-primary/20 transition-all duration-300 pointer-events-none" 
+                className="absolute left-0 top-0 h-full bg-[#ffed0033] transition-all duration-300 pointer-events-none" 
                 style={{ width: `${exportProgress}%` }}
               />
             )}
@@ -269,7 +283,7 @@ export default function App() {
 
       {/* Main Preview Area */}
       <main className="flex-1 bg-preview-bg flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="absolute top-8 left-8 text-white/40 pointer-events-none">
+        <div className="absolute top-8 left-8 text-black/40 pointer-events-none">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Live Output Preview</p>
@@ -280,7 +294,7 @@ export default function App() {
         {/* Stickers Viewport */}
         <div className="w-full h-full overflow-y-auto custom-scrollbar p-12 flex flex-col items-center gap-12 print:hidden">
           {filteredEquipments.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-white/20">
+            <div className="h-full flex flex-col items-center justify-center text-black/20">
               <Database className="w-16 h-16 mb-4" />
               <p className="text-sm font-bold uppercase tracking-widest">No Data in Buffer</p>
             </div>

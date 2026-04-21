@@ -33,39 +33,83 @@
   .sticker-content {
     width: 4in;
     height: 3in;
-    @apply overflow-hidden bg-primary shadow-2xl border border-primary-dark print:shadow-none print:border-ink print:m-0 print:bg-white;
+    overflow: hidden;
+    background-color: #FFED00;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid #d4c500;
+    @apply print:shadow-none print:border-ink print:m-0 print:bg-white;
   }
 
   .sticker-body {
-    @apply h-full w-full flex flex-col items-center justify-between p-[0.25in];
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25in;
   }
 
   .qr-wrapper {
-    @apply w-[1.1in] h-[1.1in] bg-white p-[5px] flex items-center justify-center border border-ink;
+    width: 1.1in;
+    height: 1.1in;
+    background-color: #ffffff;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #000000;
   }
 
   .label-text-container {
-    @apply w-full flex flex-col space-y-1 mb-2;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    @apply space-y-1 mb-2;
   }
 
   .detail-row {
-    @apply flex justify-between border-b border-ink/10 pb-1 last:border-0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 0.25rem;
+  }
+
+  .detail-row:last-child {
+    border-bottom: 0;
   }
 
   .detail-label {
-    @apply text-[10px] font-bold uppercase opacity-60 mt-1;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-top: 0.25rem;
   }
 
   .detail-value {
-    @apply text-base font-bold text-ink uppercase tracking-tight;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
   }
 
   .detail-value-mono {
-    @apply text-lg font-black font-mono;
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    font-weight: 900;
   }
 
   .slb-footer {
-    @apply text-[10px] font-extrabold uppercase tracking-[0.1em] border-t border-ink/10 w-full text-center pt-1;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+    padding-top: 0.25rem;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
 
   .btn-primary {
