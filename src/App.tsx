@@ -171,7 +171,7 @@ export default function App() {
             className="w-full btn-accent disabled:opacity-30 disabled:cursor-not-allowed group shadow-xl"
           >
             <Printer className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="uppercase tracking-widest">Print Sticker (3x4)</span>
+            <span className="uppercase tracking-widest">Print Sticker (4x3)</span>
           </button>
           <p className="mt-4 text-[9px] text-gray-400 text-center font-mono opacity-60">ZPL COMPATIBLE • 300 DPI THERMAL READY</p>
         </div>
