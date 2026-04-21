@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, FC, useRef, RefObject } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { Search, Printer, FileText, Database, X, Download, Loader2 } from "lucide-react";
 import { Equipment } from "./types";
 import jsPDF from "jspdf";
@@ -7,17 +7,19 @@ import html2canvas from "html2canvas";
 
 interface StickerCardProps {
   equipment: Equipment;
-  innerRef?: RefObject<HTMLDivElement | null>;
 }
 
-const StickerCard: FC<StickerCardProps> = ({ equipment, innerRef }) => {
+const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
   return (
-    <div ref={innerRef as any} className="sticker-container group relative print:break-inside-avoid">
+    <div 
+      data-sn={equipment.serialNumber}
+      className="sticker-container sticker-export-target group relative print:break-inside-avoid"
+    >
       <div className="sticker-content">
         <div className="sticker-body">
           {/* Header/QR Area */}
           <div className="qr-wrapper">
-            <QRCodeSVG
+            <QRCodeCanvas
               value={equipment.workId}
               size={85}
               level="H"
@@ -62,9 +64,6 @@ export default function App() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   
-  // Use a ref array for guaranteed 1:1 mapping with the filtered list
-  const stickerRefs = useRef<(HTMLDivElement | null)[]>([]);
-
   useEffect(() => {
     const saved = localStorage.getItem("ccu_equipments");
     if (saved) {
@@ -119,42 +118,53 @@ export default function App() {
     const pdf = new jsPDF({
       orientation: "landscape",
       unit: "in",
-      format: [4, 3]
+      format: [4, 3],
+      compress: true
     });
 
     try {
       for (let i = 0; i < filteredEquipments.length; i++) {
+        const item = filteredEquipments[i];
         setExportProgress(Math.round((i / filteredEquipments.length) * 100));
         
-        const element = stickerRefs.current[i];
+        // Find element by Serial Number data attribute for more stability
+        const element = document.querySelector(`[data-sn="${item.serialNumber}"]`) as HTMLDivElement;
         
         if (element) {
           const canvas = await html2canvas(element, {
-            scale: 1.5, 
+            scale: 1.5, // Reduced scale to save memory
             useCORS: true,
             allowTaint: true,
             backgroundColor: "#ffffff",
             logging: false,
+            // Ensure capture size is correct
             width: element.offsetWidth,
-            height: element.offsetHeight
+            height: element.offsetHeight,
+            // Avoid issues with scrolls
+            scrollX: 0,
+            scrollY: -window.scrollY,
+            windowWidth: document.documentElement.offsetWidth,
+            windowHeight: document.documentElement.offsetHeight
           });
           
-          const imgData = canvas.toDataURL("image/jpeg", 0.9);
+          const imgData = canvas.toDataURL("image/jpeg", 0.85); // Reduced quality for memory
           
           if (i > 0) pdf.addPage([4, 3], "landscape");
           pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
           
-          // Yield to UI thread
-          await new Promise(resolve => setTimeout(resolve, i % 5 === 0 ? 100 : 20));
+          // Yield to UI thread often for responsiveness
+          await new Promise(resolve => setTimeout(resolve, 50));
+        } else {
+          console.warn(`Element for SN: ${item.serialNumber} not found.`);
         }
       }
       
       setExportProgress(100);
-      const fileName = `CCU_Labels_${new Date().toISOString().slice(0, 10)}.pdf`;
-      pdf.save(fileName);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      pdf.save(`CCU_Labels_${timestamp}.pdf`);
     } catch (error) {
-      console.error("PDF Export failed:", error);
-      alert("PDF generation failed. This usually happens with too many stickers. Please use the search box to filter and export shorter batches (e.g., 10-20 at a time).");
+      console.error("PDF Export error:", error);
+      alert(`Error generating PDF: ${error instanceof Error ? error.message : String(error)}\n\nTips:\n1. Try exporting fewer items (use Search to filter).\n2. Ensure the stickers are visible on screen.`);
     } finally {
       setIsExporting(false);
       setExportProgress(0);
@@ -279,7 +289,6 @@ export default function App() {
               <StickerCard 
                 key={`${item.serialNumber}-${idx}`} 
                 equipment={item} 
-                innerRef={(el) => (stickerRefs.current[idx] = el)}
               />
             ))
           )}
