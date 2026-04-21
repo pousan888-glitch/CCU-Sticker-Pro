@@ -9,7 +9,7 @@ interface StickerCardProps {
 
 const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
   return (
-    <div className="sticker-container group relative print:break-inside-avoid shadow-2xl">
+    <div className="sticker-container group relative print:break-inside-avoid">
       <div className="sticker-content">
         <div className="sticker-body">
           {/* Header/QR Area */}
@@ -103,7 +103,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-bg-soft print:hidden print:block print:h-auto overflow-hidden">
+    <div className="flex h-screen w-full bg-bg-soft print:h-auto print:static print:block overflow-hidden print:overflow-visible">
       {/* Sidebar - Hidden in Print */}
       <aside className="w-[380px] p-8 flex flex-col space-y-8 input-panel group">
         <div className="flex items-center space-x-3 mb-4">
@@ -171,7 +171,7 @@ export default function App() {
             className="w-full btn-accent disabled:opacity-30 disabled:cursor-not-allowed group shadow-xl"
           >
             <Printer className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="uppercase tracking-widest">Print Sticker (4x3)</span>
+            <span className="uppercase tracking-widest">Print Sticker (3x4)</span>
           </button>
           <p className="mt-4 text-[9px] text-gray-400 text-center font-mono opacity-60">ZPL COMPATIBLE • 300 DPI THERMAL READY</p>
         </div>

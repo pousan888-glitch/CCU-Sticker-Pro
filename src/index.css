@@ -14,7 +14,7 @@
 
 @layer base {
   @page {
-    size: 4in 3in;
+    size: 3in 4in;
     margin: 0;
   }
 
@@ -31,8 +31,8 @@
   }
 
   .sticker-content {
-    width: 4in;
-    height: 3in;
+    width: 3in;
+    height: 4in;
     @apply overflow-hidden bg-primary shadow-2xl border border-primary-dark print:shadow-none print:border-ink print:m-0;
   }
 
@@ -95,8 +95,8 @@
     display: flex !important;
     justify-content: center;
     align-items: center;
-    width: 4in;
-    height: 3in;
+    width: 3in;
+    height: 4in;
     margin: 0 !important;
   }
 }
