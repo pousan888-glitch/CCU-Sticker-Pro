@@ -61,8 +61,8 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   
-  // Create refs for stickers to capture
-  const stickerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Use a Map for stickers to avoid index confusion when filtering
+  const stickerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   useEffect(() => {
     const saved = localStorage.getItem("ccu_equipments");
@@ -120,30 +120,39 @@ export default function App() {
     });
 
     try {
+      // Clear Map of non-existent elements first? 
+      // Better to just iterate over current filters
       for (let i = 0; i < filteredEquipments.length; i++) {
-        const element = stickerRefs.current[i];
+        const item = filteredEquipments[i];
+        const element = stickerRefs.current.get(item.serialNumber);
+        
         if (element) {
-          // Temporarily force solid background for capture if print styles hide it, 
-          // but user wants yellow in PDF or white? The user said "black letters on white" for print.
-          // Let's stick to black on white for the PDF export as well as requested.
+          // Robust html2canvas settings
           const canvas = await html2canvas(element, {
-            scale: 3, // High quality
+            scale: 2, 
             useCORS: true,
-            backgroundColor: "#ffffff" // Force white background as requested
+            allowTaint: true,
+            backgroundColor: "#ffffff",
+            logging: false
           });
           
-          const imgData = canvas.toDataURL("image/jpeg", 1.0);
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
           
           if (i > 0) pdf.addPage([4, 3], "landscape");
           pdf.addImage(imgData, "JPEG", 0, 0, 4, 3);
+          
+          // Small delay to prevent UI freezing and memory spikes
+          if (filteredEquipments.length > 5) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
         }
       }
       
       const fileName = `CCU_Labels_${new Date().toISOString().slice(0, 10)}.pdf`;
       pdf.save(fileName);
     } catch (error) {
-      console.error("PDF Export failed", error);
-      alert("Failed to generate PDF. Please try again.");
+      console.error("PDF Export failed:", error);
+      alert("Failed to generate PDF. Typical causes: too many items at once or browser memory. Try searching to export fewer items.");
     } finally {
       setIsExporting(false);
     }
@@ -259,7 +268,9 @@ export default function App() {
               <StickerCard 
                 key={`${item.serialNumber}-${idx}`} 
                 equipment={item} 
-                innerRef={(el) => (stickerRefs.current[idx] = el)}
+                innerRef={(el) => {
+                  if (el) stickerRefs.current.set(item.serialNumber, el);
+                }}
               />
             ))
           )}
