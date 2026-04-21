@@ -17,39 +17,39 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
     >
       <div className="sticker-content">
         <div className="sticker-body">
-          {/* Header/QR Area */}
-          <div className="qr-wrapper">
+          {/* Header/QR Area - centered at top */}
+          <div className="qr-wrapper-centered">
             <QRCodeCanvas
               value={equipment.workId}
-              size={128}
+              size={120}
               level="H"
               includeMargin={false}
             />
           </div>
 
-          {/* Details Area */}
-          <div className="label-text-container">
-            <div className="detail-row">
-              <span className="detail-label">Serial Number</span>
-              <span className="detail-value-mono truncate">{equipment.serialNumber}</span>
+          {/* Details Area - Word style */}
+          <div className="label-text-container-word">
+            <div className="word-row">
+              <span className="word-label">Serial Number</span>
+              <span className="word-value">{equipment.serialNumber}</span>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">Equipment</span>
-              <span className="detail-value truncate">{equipment.rentalEquipment}</span>
+            <div className="word-row">
+              <span className="word-label">Rental Equipment</span>
+              <span className="word-value">{equipment.rentalEquipment}</span>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">Work ID</span>
-              <span className="detail-value truncate">{equipment.workId}</span>
+            <div className="word-row">
+              <span className="word-label">Work ID</span>
+              <span className="word-value">{equipment.workId}</span>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">Owner</span>
-              <span className="detail-value truncate">{equipment.blOwner}</span>
+            <div className="word-row">
+              <span className="word-label">BL Owner</span>
+              <span className="word-value">{equipment.blOwner}</span>
             </div>
           </div>
 
-          {/* Footer Branding */}
-          <div className="slb-footer">
-              SLB-PRIVATE
+          {/* Footer Branding - specific casing */}
+          <div className="slb-footer-centered">
+              SLB-Private
           </div>
         </div>
       </div>

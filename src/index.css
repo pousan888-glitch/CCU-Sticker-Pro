@@ -46,76 +46,48 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.25in;
+    padding: 0.15in 0.25in 0.15in 0.25in;
+    color: #000000;
   }
 
-  .qr-wrapper {
-    width: 1.1in;
-    height: 1.1in;
+  .qr-wrapper-centered {
     background-color: #ffffff;
-    padding: 5px;
+    padding: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #000000;
+    margin-bottom: 0.15in;
   }
 
-  .label-text-container {
+  .label-text-container-word {
     width: 100%;
     display: flex;
     flex-direction: column;
-    @apply space-y-1 mb-2;
+    gap: 2px;
   }
 
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .detail-row:last-child {
-    border-bottom: 0;
-    margin-bottom: 0;
-  }
-
-  .detail-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    opacity: 0.6;
-    margin-top: 0.25rem;
-  }
-
-  .detail-value {
-    font-size: 1rem;
-    line-height: 1.6;
-    font-weight: 700;
-    color: #000000;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    padding: 2px 0;
-  }
-
-  .detail-value-mono {
-    font-family: var(--font-mono);
-    font-size: 1.125rem;
-    font-weight: 900;
+  .word-row {
+    display: grid;
+    grid-template-columns: 1.4in 1fr;
+    align-items: baseline;
+    font-size: 16px; /* Approx 12pt */
     line-height: 1.4;
-    padding: 2px 0;
   }
 
-  .slb-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  .word-label {
+    font-weight: 400;
+  }
+
+  .word-value {
+    font-weight: 400;
+  }
+
+  .slb-footer-centered {
+    margin-top: auto;
     width: 100%;
     text-align: center;
-    padding-top: 0.25rem;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 13px; /* Smaller as in photo */
+    font-weight: 400;
   }
 
   .btn-primary {
