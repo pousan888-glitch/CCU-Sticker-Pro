@@ -132,12 +132,18 @@ export default function App() {
         if (element) {
           try {
             const canvas = await html2canvas(element, {
-              scale: 1.5, // 1.5 is safer for memory in large batches
+              scale: 2, // Back to 2 for better text clarity
               useCORS: true,
               allowTaint: true,
               backgroundColor: "#ffffff",
               logging: false,
               onclone: (clonedDoc) => {
+                // Ensure the cloned segment has overflow visible to prevent clipping
+                const targets = clonedDoc.getElementsByClassName('sticker-export-target');
+                for (let j = 0; j < targets.length; j++) {
+                  (targets[j] as HTMLElement).style.overflow = 'visible';
+                }
+
                 const styles = clonedDoc.getElementsByTagName('style');
                 for (let j = 0; j < styles.length; j++) {
                   const s = styles[j];
@@ -148,8 +154,9 @@ export default function App() {
               },
               width: element.offsetWidth,
               height: element.offsetHeight,
+              // Fixed scroll handling
               scrollX: 0,
-              scrollY: -window.scrollY,
+              scrollY: 0,
               windowWidth: document.documentElement.offsetWidth,
               windowHeight: document.documentElement.offsetHeight
             });

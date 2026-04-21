@@ -89,16 +89,18 @@
 
   .detail-value {
     font-size: 1rem;
+    line-height: normal;
     font-weight: 700;
     color: #000000;
     text-transform: uppercase;
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
   }
 
   .detail-value-mono {
     font-family: var(--font-mono);
     font-size: 1.125rem;
     font-weight: 900;
+    line-height: 1.2;
   }
 
   .slb-footer {
