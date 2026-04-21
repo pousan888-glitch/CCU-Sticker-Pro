@@ -1,0 +1,6 @@
+{
+  "name": "CCU Sticker Pro",
+  "description": "Professional 4x3 industrial sticker generator with QR code automation for CCU equipment. Supports Excel copy-paste and serial number search.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

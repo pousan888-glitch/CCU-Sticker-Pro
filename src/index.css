@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-primary: #FFED00;
+  --color-primary-dark: #d4c500;
+  --color-ink: #000000;
+  --color-bg-soft: #f0f2f5;
+  --color-panel-bg: #ffffff;
+  --color-preview-bg: #111827; /* gray-900 */
+}
+
+@layer base {
+  @page {
+    size: 4in 3in;
+    margin: 0;
+  }
+
+  body {
+    @apply bg-bg-soft text-ink font-sans;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+@layer components {
+  .sticker-container {
+    @apply relative transition-all duration-300 print:transform-none;
+  }
+
+  .sticker-content {
+    width: 4in;
+    height: 3in;
+    @apply overflow-hidden bg-primary shadow-2xl border border-primary-dark print:shadow-none print:border-ink print:m-0;
+  }
+
+  .sticker-body {
+    @apply h-full w-full flex flex-col items-center justify-between p-[0.25in];
+  }
+
+  .qr-wrapper {
+    @apply w-[1.1in] h-[1.1in] bg-white p-[5px] flex items-center justify-center border border-ink;
+  }
+
+  .label-text-container {
+    @apply w-full flex flex-col space-y-1 mb-2;
+  }
+
+  .detail-row {
+    @apply flex justify-between border-b border-ink/10 pb-1 last:border-0;
+  }
+
+  .detail-label {
+    @apply text-[10px] font-bold uppercase opacity-60 mt-1;
+  }
+
+  .detail-value {
+    @apply text-base font-bold text-ink uppercase tracking-tight;
+  }
+
+  .detail-value-mono {
+    @apply text-lg font-black font-mono;
+  }
+
+  .slb-footer {
+    @apply text-[10px] font-extrabold uppercase tracking-[0.1em] border-t border-ink/10 w-full text-center pt-1;
+  }
+
+  .btn-primary {
+    @apply bg-ink text-white font-bold py-3 px-6 rounded-xl transition-all hover:bg-gray-800 active:scale-[0.98] disabled:opacity-50;
+  }
+
+  .btn-accent {
+    @apply bg-primary text-ink font-extrabold py-4 px-6 rounded-xl flex items-center justify-center space-x-2 transition-all hover:bg-yellow-400 active:scale-[0.98];
+  }
+
+  .input-panel {
+    @apply bg-panel-bg border-r border-gray-200 h-screen overflow-y-auto print:hidden;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .sticker-container {
+    page-break-after: always;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 4in;
+    height: 3in;
+    margin: 0 !important;
+  }
+}
