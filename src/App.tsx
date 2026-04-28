@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, FC, useRef, RefObject } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { Search, Printer, FileText, Database, X, Download, Loader2 } from "lucide-react";
+import { Search, Printer, FileText, Database, X, Download, Loader2, Plus } from "lucide-react";
 import { Equipment } from "./types";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -31,7 +31,7 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
           {/* Details Area - Word style */}
           <div className="label-text-container-word">
             <div className="word-row">
-              <span className="word-label">Serial Number</span>
+              <span className="word-label">s/n</span>
               <span className="word-value">{equipment.serialNumber}</span>
             </div>
             <div className="word-row">
@@ -62,6 +62,12 @@ export default function App() {
   const [rawData, setRawData] = useState("");
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [manualData, setManualData] = useState({
+    sn: "",
+    rental: "",
+    workId: "",
+    owner: ""
+  });
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   
@@ -108,6 +114,24 @@ export default function App() {
       setEquipments([]);
       localStorage.removeItem("ccu_equipments");
     }
+  };
+
+  const addManualItem = () => {
+    if (!manualData.sn.trim()) return;
+    
+    setEquipments(prev => [...prev, {
+      serialNumber: manualData.sn,
+      rentalEquipment: manualData.rental,
+      workId: manualData.workId,
+      blOwner: manualData.owner
+    }]);
+    
+    setManualData({
+      sn: "",
+      rental: "",
+      workId: "",
+      owner: ""
+    });
   };
 
   const downloadPDFFull = async () => {
@@ -205,8 +229,54 @@ export default function App() {
 
         <div className="space-y-3">
           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <Plus className="w-3 h-3" />
+            1. Manual Add (Single Item)
+          </label>
+          <div className="bg-primary/10 p-4 rounded-2xl space-y-3 border border-primary/20">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="s/n"
+                value={manualData.sn}
+                onChange={(e) => setManualData({...manualData, sn: e.target.value})}
+                className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:border-primary shadow-sm"
+              />
+              <input
+                type="text"
+                placeholder="Rental Equipment"
+                value={manualData.rental}
+                onChange={(e) => setManualData({...manualData, rental: e.target.value})}
+                className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:border-primary shadow-sm"
+              />
+              <input
+                type="text"
+                placeholder="Work ID"
+                value={manualData.workId}
+                onChange={(e) => setManualData({...manualData, workId: e.target.value})}
+                className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:border-primary shadow-sm"
+              />
+              <input
+                type="text"
+                placeholder="BL Owner"
+                value={manualData.owner}
+                onChange={(e) => setManualData({...manualData, owner: e.target.value})}
+                className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:border-primary shadow-sm"
+              />
+            </div>
+            <button
+              onClick={addManualItem}
+              disabled={!manualData.sn.trim()}
+              className="w-full py-2 bg-primary hover:bg-primary-dark text-ink font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50"
+            >
+              Add One Item
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
             <FileText className="w-3 h-3" />
-            1. Import Data (Excel Tab-Separated)
+            2. Import Data (Excel Tab-Separated)
           </label>
           <textarea
             id="excel_data"
@@ -234,7 +304,7 @@ export default function App() {
         <div className="space-y-3">
           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
             <Search className="w-3 h-3" />
-            2. Search Serial Number
+            3. Search Serial Number
           </label>
           <div className="relative">
             <input
