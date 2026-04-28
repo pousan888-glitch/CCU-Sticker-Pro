@@ -37,7 +37,9 @@
     background-color: #FFED00;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     border: 1px solid #d4c500;
-    @apply print:shadow-none print:border-ink print:m-0 print:bg-white;
+    @apply print:shadow-none print:border-none print:m-0 print:bg-[#FFED00];
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .sticker-body {
@@ -46,7 +48,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.1in 0.25in 0.25in 0.25in; /* Reduced top padding, increased bottom safety bubble */
+    padding: 0.1in 0.25in 0.25in 0.25in;
     color: #000000;
   }
 
@@ -56,7 +58,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.08in; /* Reduced from 0.15in to lift text up */
+    margin-bottom: 0.05in; /* Reduced to accommodate larger QR */
   }
 
   .label-text-container-word {
@@ -96,21 +98,19 @@
 }
 
 @media print {
-  body {
-    background: white !important;
-  }
-
   .no-print {
     display: none !important;
   }
 
   .sticker-container {
     page-break-after: always;
+    page-break-inside: avoid;
     display: flex !important;
     justify-content: center;
     align-items: center;
     width: 4in;
     height: 3in;
     margin: 0 !important;
+    padding: 0 !important;
   }
 }

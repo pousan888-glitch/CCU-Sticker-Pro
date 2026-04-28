@@ -21,7 +21,7 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
           <div className="qr-wrapper-centered">
             <QRCodeCanvas
               value={equipment.workId}
-              size={120}
+              size={140}
               level="H"
               includeMargin={false}
               bgColor="transparent"
