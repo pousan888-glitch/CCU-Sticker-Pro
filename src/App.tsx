@@ -31,7 +31,7 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
           {/* Details Area - Word style */}
           <div className="label-text-container-word">
             <div className="word-row">
-              <span className="word-label">s/n</span>
+              <span className="word-label">Serial Number</span>
               <span className="word-value">{equipment.serialNumber}</span>
             </div>
             <div className="word-row">
@@ -46,11 +46,6 @@ const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
               <span className="word-label">BL Owner</span>
               <span className="word-value">{equipment.blOwner}</span>
             </div>
-          </div>
-
-          {/* Footer Branding - specific casing */}
-          <div className="slb-footer-centered">
-              SLB-Private
           </div>
         </div>
       </div>
@@ -236,7 +231,7 @@ export default function App() {
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="text"
-                placeholder="s/n"
+                placeholder="Serial Number"
                 value={manualData.sn}
                 onChange={(e) => setManualData({...manualData, sn: e.target.value})}
                 className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:border-primary shadow-sm"
