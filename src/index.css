@@ -14,7 +14,7 @@
 
 @layer base {
   @page {
-    size: 4in 3in;
+    size: 4in 3in landscape;
     margin: 0;
   }
 
@@ -98,19 +98,35 @@
 }
 
 @media print {
-  .no-print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 4in !important;
+    height: 3in !important;
+    background: transparent !important;
+  }
+
+  .no-print, .print\:hidden {
     display: none !important;
   }
 
   .sticker-container {
     page-break-after: always;
     page-break-inside: avoid;
+    break-after: page;
     display: flex !important;
     justify-content: center;
     align-items: center;
-    width: 4in;
-    height: 3in;
+    width: 4in !important;
+    height: 3in !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  .sticker-content {
+    width: 4in !important;
+    height: 3in !important;
+    border: none !important;
+    background-color: #FFED00 !important;
   }
 }

@@ -213,7 +213,7 @@ export default function App() {
   return (
     <div className="flex h-screen w-full bg-bg-soft print:h-auto print:static print:block overflow-hidden print:overflow-visible">
       {/* Sidebar - Hidden in Print */}
-      <aside className="w-[380px] p-8 flex flex-col space-y-8 input-panel group">
+      <aside className="w-[380px] p-8 flex flex-col space-y-8 input-panel group print:hidden">
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center font-black text-2xl shadow-inner border border-primary-dark">C</div>
           <div>
@@ -353,7 +353,7 @@ export default function App() {
       </aside>
 
       {/* Main Preview Area */}
-      <main className="flex-1 bg-preview-bg flex flex-col items-center justify-center relative overflow-hidden">
+      <main className="flex-1 bg-preview-bg flex flex-col items-center justify-center relative overflow-hidden print:hidden">
         <div className="absolute top-8 left-8 text-black/40 pointer-events-none">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
