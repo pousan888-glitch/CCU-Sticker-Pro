@@ -7,11 +7,13 @@ import html2canvas from "html2canvas";
 
 interface StickerCardProps {
   equipment: Equipment;
+  innerRef?: (el: HTMLDivElement | null) => void;
 }
 
-const StickerCard: FC<StickerCardProps> = ({ equipment }) => {
+const StickerCard: FC<StickerCardProps> = ({ equipment, innerRef }) => {
   return (
     <div 
+      ref={innerRef}
       data-sn={equipment.serialNumber}
       className="sticker-container sticker-export-target group relative print:break-inside-avoid"
     >
@@ -65,6 +67,7 @@ export default function App() {
   });
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const stickerRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   useEffect(() => {
     const saved = localStorage.getItem("ccu_equipments");
@@ -143,58 +146,57 @@ export default function App() {
     });
 
     try {
+      const totalSteps = filteredEquipments.length * 2;
+      let currentStep = 0;
+
       for (let i = 0; i < filteredEquipments.length; i++) {
         const item = filteredEquipments[i];
         
-        // Find element by Serial Number data attribute for more stability
-        const element = document.querySelector(`[data-sn="${item.serialNumber}"]`) as HTMLDivElement;
-        
-        if (element) {
-          try {
-            const canvas = await html2canvas(element, {
-              scale: 3, // Ultra sharpness for printing
-              useCORS: true,
-              allowTaint: true,
-              backgroundColor: "#ffffff",
-              logging: false,
-              onclone: (clonedDoc) => {
-                const targets = clonedDoc.getElementsByClassName('sticker-export-target');
-                for (let j = 0; j < targets.length; j++) {
-                  (targets[j] as HTMLElement).style.overflow = 'visible';
-                }
-
-                const styles = clonedDoc.getElementsByTagName('style');
-                for (let j = 0; j < styles.length; j++) {
-                  const s = styles[j];
-                  if (s.innerHTML.includes('oklch') || s.innerHTML.includes('oklab')) {
-                    s.innerHTML = s.innerHTML.replace(/(oklch|oklab)\([^)]+\)/g, '#000000');
+        // Process twice for each item
+        for (let copy = 0; copy < 2; copy++) {
+          const element = stickerRefs.current[i * 2 + copy];
+          
+          if (element) {
+            try {
+              const canvas = await html2canvas(element, {
+                scale: 3,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: "#ffffff",
+                logging: false,
+                onclone: (clonedDoc) => {
+                  const targets = clonedDoc.getElementsByClassName('sticker-export-target');
+                  for (let j = 0; j < targets.length; j++) {
+                    (targets[j] as HTMLElement).style.overflow = 'visible';
                   }
-                }
-              },
-              width: element.offsetWidth,
-              height: element.offsetHeight,
-              scrollX: 0,
-              scrollY: 0,
-              windowWidth: document.documentElement.offsetWidth,
-              windowHeight: document.documentElement.offsetHeight
-            });
-            
-            const imgData = canvas.toDataURL("image/png"); // PNG for maximum text clarity
-            
-            if (i > 0) pdf.addPage([4, 3], "landscape");
-            pdf.addImage(imgData, "PNG", 0, 0, 4, 3);
-          } catch (itemError) {
-            console.error(`Error processing item ${i} (SN: ${item.serialNumber}):`, itemError);
-            // Continue with other items instead of failing everything
+                  const styles = clonedDoc.getElementsByTagName('style');
+                  for (let j = 0; j < styles.length; j++) {
+                    const s = styles[j];
+                    if (s.innerHTML.includes('oklch') || s.innerHTML.includes('oklab')) {
+                      s.innerHTML = s.innerHTML.replace(/(oklch|oklab)\([^)]+\)/g, '#000000');
+                    }
+                  }
+                },
+                width: element.offsetWidth,
+                height: element.offsetHeight,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: document.documentElement.offsetWidth,
+                windowHeight: document.documentElement.offsetHeight
+              });
+              
+              const imgData = canvas.toDataURL("image/png");
+              
+              if (currentStep > 0) pdf.addPage([4, 3], "landscape");
+              pdf.addImage(imgData, "PNG", 0, 0, 4, 3);
+            } catch (itemError) {
+              console.error(`Error processing copy ${copy} of item ${i}:`, itemError);
+            }
           }
           
-          const nextProgress = Math.round(((i + 1) / filteredEquipments.length) * 100);
-          setExportProgress(nextProgress);
-          
-          // Yield to UI thread to prevent freezing and allow progress bar to update
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } else {
-          console.warn(`Element for SN: ${item.serialNumber} not found.`);
+          currentStep++;
+          setExportProgress(Math.round((currentStep / totalSteps) * 100));
+          await new Promise(resolve => setTimeout(resolve, 80));
         }
       }
       
@@ -370,21 +372,28 @@ export default function App() {
               <p className="text-sm font-bold uppercase tracking-widest">No Data in Buffer</p>
             </div>
           ) : (
-            filteredEquipments.map((item, idx) => (
+            filteredEquipments.flatMap((item, idx) => [
               <StickerCard 
-                key={`${item.serialNumber}-${idx}`} 
+                key={`${item.serialNumber}-${idx}-1`} 
                 equipment={item} 
+                innerRef={(el) => (stickerRefs.current[idx * 2] = el)}
+              />,
+              <StickerCard 
+                key={`${item.serialNumber}-${idx}-2`} 
+                equipment={item} 
+                innerRef={(el) => (stickerRefs.current[idx * 2 + 1] = el)}
               />
-            ))
+            ])
           )}
         </div>
       </main>
 
       {/* Print-only container */}
       <div className="hidden print:block w-full">
-        {filteredEquipments.map((item, idx) => (
-          <StickerCard key={`print-${item.serialNumber}-${idx}`} equipment={item} />
-        ))}
+        {filteredEquipments.flatMap((item, idx) => [
+          <StickerCard key={`print-${item.serialNumber}-${idx}-1`} equipment={item} />,
+          <StickerCard key={`print-${item.serialNumber}-${idx}-2`} equipment={item} />
+        ])}
       </div>
     </div>
   );
