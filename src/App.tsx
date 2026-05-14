@@ -247,8 +247,8 @@ export default function App() {
   return (
     <div className="flex h-screen w-full bg-bg-soft print:h-auto print:static print:block overflow-hidden print:overflow-visible">
       {/* Sidebar - Hidden in Print */}
-      <aside className="w-[380px] p-8 flex flex-col space-y-8 input-panel group print:hidden">
-        <div className="flex items-center space-x-3 mb-4">
+      <aside className="w-[380px] p-8 flex flex-col space-y-8 input-panel group print:hidden overflow-y-auto custom-scrollbar">
+        <div className="flex items-center space-x-3 mb-4 shrink-0">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center font-black text-2xl shadow-inner border border-primary-dark">C</div>
           <div>
             <h1 className="text-xl font-extrabold tracking-tighter uppercase leading-none">CCU Automation</h1>
