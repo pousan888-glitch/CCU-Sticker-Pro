@@ -59,6 +59,7 @@ export default function App() {
   const [rawData, setRawData] = useState("");
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSNs, setSelectedSNs] = useState<Set<string>>(new Set());
   const [manualData, setManualData] = useState({
     sn: "",
     rental: "",
@@ -101,11 +102,42 @@ export default function App() {
   };
 
   const filteredEquipments = useMemo(() => {
-    if (!searchQuery.trim()) return equipments;
-    return equipments.filter((e) =>
+    let result = equipments;
+    if (searchQuery.trim()) {
+      result = result.filter((e) =>
+        e.serialNumber.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    if (selectedSNs.size > 0) {
+      result = result.filter((e) => selectedSNs.has(e.serialNumber));
+    }
+    
+    return result;
+  }, [equipments, searchQuery, selectedSNs]);
+
+  const toggleSNSelection = (sn: string) => {
+    const newSelected = new Set(selectedSNs);
+    if (newSelected.has(sn)) {
+      newSelected.delete(sn);
+    } else {
+      newSelected.add(sn);
+    }
+    setSelectedSNs(newSelected);
+  };
+
+  const selectAllFiltered = () => {
+    const currentFiltered = equipments.filter((e) =>
       e.serialNumber.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [equipments, searchQuery]);
+    const newSelected = new Set(selectedSNs);
+    currentFiltered.forEach(e => newSelected.add(e.serialNumber));
+    setSelectedSNs(newSelected);
+  };
+
+  const clearSelection = () => {
+    setSelectedSNs(new Set());
+  };
 
   const clearData = () => {
     if (confirm("Are you sure you want to clear all data?")) {
@@ -318,6 +350,52 @@ export default function App() {
               </button>
             )}
           </div>
+
+          {/* SN Selection List */}
+          {equipments.length > 0 && (
+            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col max-h-[300px]">
+              <div className="p-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  {selectedSNs.size > 0 ? `${selectedSNs.size} Selected` : 'Select Items'}
+                </span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={selectAllFiltered}
+                    className="text-[9px] font-bold text-primary-dark hover:underline uppercase"
+                  >
+                    All
+                  </button>
+                  <button 
+                    onClick={clearSelection}
+                    className="text-[9px] font-bold text-red-400 hover:underline uppercase"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
+                {equipments
+                  .filter(e => e.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((item, idx) => (
+                    <label 
+                      key={`select-${item.serialNumber}-${idx}`}
+                      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
+                        selectedSNs.has(item.serialNumber) ? 'bg-primary/10' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <input 
+                        type="checkbox"
+                        checked={selectedSNs.has(item.serialNumber)}
+                        onChange={() => toggleSNSelection(item.serialNumber)}
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <span className="text-xs font-mono font-bold truncate">{item.serialNumber}</span>
+                    </label>
+                  ))
+                }
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto pt-8 border-t border-gray-100 space-y-3">
