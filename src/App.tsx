@@ -350,50 +350,86 @@ export default function App() {
               </button>
             )}
           </div>
+        </div>
 
-          {/* SN Selection List */}
-          {equipments.length > 0 && (
-            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col max-h-[300px]">
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <Database className="w-3 h-3" />
+            4. Review & Select Objects
+          </label>
+          {equipments.length > 0 ? (
+            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col max-h-[400px]">
               <div className="p-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  {selectedSNs.size > 0 ? `${selectedSNs.size} Selected` : 'Select Items'}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">
+                    Review List
+                  </span>
+                  <span className="text-[9px] font-bold text-primary-dark mt-1">
+                    {selectedSNs.size > 0 ? `${selectedSNs.size} of ${equipments.length} selected` : 'Select items to export'}
+                  </span>
+                </div>
                 <div className="flex gap-2">
                   <button 
                     onClick={selectAllFiltered}
-                    className="text-[9px] font-bold text-primary-dark hover:underline uppercase"
+                    className="px-2 py-1 bg-primary/20 hover:bg-primary/30 rounded-lg text-[9px] font-bold text-primary-dark uppercase transition-colors"
                   >
-                    All
+                    Select All
                   </button>
                   <button 
                     onClick={clearSelection}
-                    className="text-[9px] font-bold text-red-400 hover:underline uppercase"
+                    className="px-2 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-[9px] font-bold text-red-500 uppercase transition-colors"
                   >
                     Clear
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-1 space-y-1">
                 {equipments
                   .filter(e => e.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map((item, idx) => (
                     <label 
                       key={`select-${item.serialNumber}-${idx}`}
-                      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
-                        selectedSNs.has(item.serialNumber) ? 'bg-primary/10' : 'hover:bg-gray-50'
+                      className={`flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
+                        selectedSNs.has(item.serialNumber) 
+                          ? 'bg-primary/5 border-primary/20 shadow-sm' 
+                          : 'hover:bg-gray-50 border-transparent'
                       }`}
                     >
-                      <input 
-                        type="checkbox"
-                        checked={selectedSNs.has(item.serialNumber)}
-                        onChange={() => toggleSNSelection(item.serialNumber)}
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                      <span className="text-xs font-mono font-bold truncate">{item.serialNumber}</span>
+                      <div className="pt-0.5">
+                        <input 
+                          type="checkbox"
+                          checked={selectedSNs.has(item.serialNumber)}
+                          onChange={() => toggleSNSelection(item.serialNumber)}
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs font-mono font-black truncate text-gray-900 group-hover:text-primary transition-colors">
+                            {item.serialNumber}
+                          </span>
+                          <span className="text-[9px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded uppercase">
+                            ID: {item.workId}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 mt-1">
+                          <span className="text-[9px] text-gray-500 truncate italic">
+                            {item.rentalEquipment}
+                          </span>
+                          <span className="text-[9px] text-gray-400 truncate border-l border-gray-200 pl-2">
+                            {item.blOwner}
+                          </span>
+                        </div>
+                      </div>
                     </label>
                   ))
                 }
               </div>
+            </div>
+          ) : (
+            <div className="p-8 border-2 border-dashed border-gray-100 rounded-2xl flex flex-col items-center justify-center text-gray-300">
+               <Database className="w-8 h-8 mb-2 opacity-20" />
+               <p className="text-[10px] font-bold uppercase tracking-widest">Buffer Empty</p>
             </div>
           )}
         </div>
